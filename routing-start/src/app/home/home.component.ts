@@ -17,4 +17,10 @@ export class HomeComponent implements OnInit {
     // something is doing
     this.router.navigate(['/servers']) // << absolute path is safer than relative path [servers] no in this situation but in complex it will be!
   }
+
+  onLoadServer(id: number) {
+    // something is doing
+    console.log("HomeComponent => onLoadServer [" + id + "]")
+    this.router.navigate(['/servers', id, 'edit'], {queryParams: {allowEdit: '1'}, fragment: 'loading'}) // << absolute path is safer than relative path [servers] no in this situation but in complex it will be!
+  }
 }
