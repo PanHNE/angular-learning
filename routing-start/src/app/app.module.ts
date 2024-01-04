@@ -23,7 +23,7 @@ const appRoutes: Routes = [
   },
   {
     path: 'servers',
-    component: ServerComponent
+    component: ServersComponent
   },
 ];
 
