@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Post } from './post.model';
+import { PostsService } from './post.service';
 
 @Component({
   selector: 'app-root',
@@ -10,48 +11,59 @@ import { Post } from './post.model';
 })
 export class AppComponent implements OnInit {
   loadedPosts = [];
+  isFetching = false;
+  error = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private postService: PostsService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.loadDate();
+  }
 
   onCreatePost(postData: Post) {
     // Send Http request
-    console.log(postData);
-    this.http.post<{ name: string }>(
-      'https://learning-b5a0b-default-rtdb.europe-west1.firebasedatabase.app/posts.json',
-      postData
-    ).subscribe( response => {
-      console.log(response);
-    });
+    this.postService
+      .createAndStorePost(postData)
+      .subscribe(
+        response => {
+          console.log(response);
+        },
+        error => {
+          this.error = error.error.message;
+        }
+      );;
   }
 
   onFetchPosts() {
     // Send Http request
-    this.fetchPosts();
+    this.loadDate();
   }
 
   onClearPosts() {
-    // Send Http request
+    this.postService.deleteAllPosts().subscribe( response => {
+      console.log(response);
+      this.loadedPosts = [];
+    });
   }
 
-  private fetchPosts(){
-    this.http.get<{ [key: string]: Post }>('https://learning-b5a0b-default-rtdb.europe-west1.firebasedatabase.app/posts.json')
-      .pipe(
-        map( responseData => {
-          const postsArray: Post[] = [];
+  onHandleError() {
+    this.error = null;
+  }
 
-          for (const key in responseData) {
-            if (responseData.hasOwnProperty(key)) {
-              postsArray.push({ ...responseData[key], id: key});
-            }
-          }
-
-          return postsArray;
-      }))
-      .subscribe( posts => {
+  loadDate() {
+    this.isFetching = true;
+    this.postService
+    .fetchPosts()
+    .subscribe(
+      posts => {
         console.log(posts);
+        this.isFetching = false;
         this.loadedPosts = posts;
-      });
+      },
+      error => {
+        console.log(error);
+        this.error = error.message;
+      } 
+    );
   }
 }
